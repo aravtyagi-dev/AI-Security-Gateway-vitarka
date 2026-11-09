@@ -221,3 +221,10 @@ Negative demos: 5/5 ✓ ALL SECURITY CONTROLS VERIFIED
 
 ### Supply-Chain
 Every commit triggers: **Test → SBOM (Syft) → Build → Trivy scan → cosign sign → Measurement publish**
+## Project Screenshots
+
+### Dashboard Screenshot 1
+![AI Security Gateway Dashboard](Screenshot%202026-11-04%20214828.png)
+
+### Dashboard Screenshot 2
+![AI Security Gateway Interface](Screenshot%202026-11-04%20214941.png)
