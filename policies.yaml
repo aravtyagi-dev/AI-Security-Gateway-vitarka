@@ -1,0 +1,259 @@
+version: "1.0"
+default_action: "allow"
+
+# Action severity rank (strictest wins):
+# block > require_approval > redact > mask > warn > allow
+
+categories:
+  # PII: prefer MASK over BLOCK so legitimate work continues
+  aadhaar:
+    action: "mask"
+    tag: "[AADHAAR_REDACTED]"
+    threshold: 0.8
+    role_overrides:
+      admin: "warn"
+      
+  pan:
+    action: "mask"
+    tag: "[PAN_REDACTED]"
+    threshold: 0.8
+    role_overrides:
+      admin: "warn"
+
+  partial_aadhaar:
+    action: "mask"
+    tag: "[PARTIAL_AADHAAR_REDACTED]"
+    threshold: 0.75
+    role_overrides:
+      admin: "warn"
+
+  partial_pan:
+    action: "mask"
+    tag: "[PARTIAL_PAN_REDACTED]"
+    threshold: 0.75
+    role_overrides:
+      admin: "warn"
+
+  possible_identifier:
+    action: "warn"
+    threshold: 0.65
+
+  phone:
+    action: "mask"
+    tag: "[PHONE_REDACTED]"
+    threshold: 0.8
+    role_overrides:
+      admin: "warn"
+
+  credit_card:
+    action: "mask"
+    tag: "[CREDIT_CARD_REDACTED]"
+    threshold: 0.8
+    role_overrides:
+      admin: "mask"
+
+  upi:
+    action: "mask"
+    tag: "[UPI_REDACTED]"
+    threshold: 0.8
+
+  ifsc:
+    action: "mask"
+    tag: "[IFSC_REDACTED]"
+    threshold: 0.8
+
+  bank_account:
+    action: "mask"
+    tag: "[BANK_ACCOUNT_REDACTED]"
+    threshold: 0.8
+
+  # Secrets: strict blocking of raw credentials
+  secret_aws:
+    action: "block"
+    tag: "[AWS_KEY_REDACTED]"
+    threshold: 0.9
+
+  secret_openai:
+    action: "block"
+    tag: "[OPENAI_KEY_REDACTED]"
+    threshold: 0.9
+
+  secret_google:
+    action: "block"
+    tag: "[GOOGLE_KEY_REDACTED]"
+    threshold: 0.9
+
+  secret_github:
+    action: "block"
+    tag: "[GITHUB_TOKEN_REDACTED]"
+    threshold: 0.9
+
+  secret_private_key:
+    action: "block"
+    tag: "[PRIVATE_KEY_REDACTED]"
+    threshold: 0.9
+
+  secret_password:
+    action: "mask"
+    tag: "[PASSWORD_REDACTED]"
+    threshold: 0.8
+
+  secret_entropy:
+    action: "mask"
+    tag: "[HIGH_ENTROPY_SECRET_REDACTED]"
+    threshold: 0.75
+
+  # Confidential Material
+  confidential_marker:
+    action: "require_approval"
+    threshold: 0.8
+    role_overrides:
+      intern: "block"
+      admin: "allow"
+      hr_mgr: "allow"
+      analyst: "require_approval"
+
+  confidential_topic:
+    action: "require_approval"
+    threshold: 0.8
+    role_overrides:
+      intern: "block"
+      admin: "allow"
+      hr_mgr: "allow"
+      analyst: "require_approval"
+
+  source_code_internal_host:
+    action: "mask"
+    tag: "[INTERNAL_ENDPOINT_REDACTED]"
+    threshold: 0.8
+
+  source_code_connection_string:
+    action: "block"
+    threshold: 0.8
+
+  source_code:
+    action: "warn"
+    threshold: 0.7
+
+  # Prompt Injections & Jailbreaks
+  prompt_injection:
+    action: "block"
+    threshold: 0.65
+
+  indirect_injection:
+    action: "block"
+    threshold: 0.60
+
+  # Output Guard Leaks
+  canary_leak:
+    action: "block"
+    threshold: 0.5
+
+  restricted_doc_leak:
+    action: "block"
+    threshold: 0.7
+
+  # Image & Document Leak Categories
+  aadhaar_card_image:
+    action: "mask"
+    tag: "[AADHAAR_CARD_REDACTED]"
+    threshold: 0.85
+    role_overrides:
+      admin: "warn"
+
+  pan_card_image:
+    action: "mask"
+    tag: "[PAN_CARD_REDACTED]"
+    threshold: 0.85
+    role_overrides:
+      admin: "warn"
+
+  payment_card_image:
+    action: "mask"
+    tag: "[PAYMENT_CARD_REDACTED]"
+    threshold: 0.85
+    role_overrides:
+      admin: "warn"
+
+  passport_image:
+    action: "mask"
+    tag: "[PASSPORT_REDACTED]"
+    threshold: 0.85
+    role_overrides:
+      admin: "warn"
+
+  terminal_screenshot_image:
+    action: "warn"
+    tag: "[TERMINAL_SCREENSHOT_REDACTED]"
+    threshold: 0.80
+
+  official_seal_stamp:
+    action: "warn"
+    threshold: 0.75
+
+  biometric_identity_image:
+    action: "warn"
+    threshold: 0.75
+
+  confidential_metadata:
+    action: "mask"
+    threshold: 0.75
+
+  steganography_appended_payload:
+    action: "block"
+    threshold: 0.80
+
+  hidden_visual_content:
+    action: "warn"
+    threshold: 0.75
+
+  hidden_workbook_sheet:
+    action: "warn"
+    threshold: 0.80
+
+  macro_embedded_executable:
+    action: "block"
+    threshold: 0.90
+    role_overrides:
+      admin: "require_approval"
+
+  scanned_pdf_no_text_layer:
+    action: "warn"
+    threshold: 0.65
+
+  bulk_personal_data_leak:
+    action: "block"
+    threshold: 0.85
+    role_overrides:
+      admin: "require_approval"
+
+  dlp_restricted_document_match:
+    action: "block"
+    threshold: 0.80
+
+  indirect_prompt_injection:
+    action: "block"
+    threshold: 0.60
+
+  suspicious_file_anomaly:
+    action: "block"
+    threshold: 0.85
+
+  archive_security_violation:
+    action: "block"
+    threshold: 0.85
+
+  encrypted_file:
+    action: "block"
+    threshold: 0.85
+
+# File Processing Configuration & Budgets
+files:
+  max_file_size_mb: 15
+  max_files_per_request: 5
+  max_total_extracted_mb: 25
+  max_pages: 100
+  max_archive_depth: 3
+  ocr_languages: ["eng", "hin"]
+  fail_closed: true
+

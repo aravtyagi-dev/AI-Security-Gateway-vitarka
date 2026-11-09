@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  gateway:
+    build: .
+    container_name: ai-security-gateway
+    command: uvicorn gateway.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      - LLM_PROVIDER=${LLM_PROVIDER:-mock}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - AUDIT_KEY=${AUDIT_KEY:-ai-gateway-audit-secret-key-32b}
+      - AUDIT_DB_PATH=/app/data/audit.db
+      - POLICIES_PATH=/app/policies.yaml
+    volumes:
+      - gateway_data:/app/data
+
+  chat_ui:
+    build: .
+    container_name: ai-gateway-chat
+    command: streamlit run ui/chat.py --server.port 8501 --server.address 0.0.0.0
+    ports:
+      - "8501:8501"
+    environment:
+      - GATEWAY_URL=http://gateway:8000
+    depends_on:
+      - gateway
+
+  dashboard:
+    build: .
+    container_name: ai-gateway-dashboard
+    command: streamlit run ui/dashboard.py --server.port 8502 --server.address 0.0.0.0
+    ports:
+      - "8502:8502"
+    environment:
+      - GATEWAY_URL=http://gateway:8000
+      - AUDIT_DB_PATH=/app/data/audit.db
+    volumes:
+      - gateway_data:/app/data
+    depends_on:
+      - gateway
+
+volumes:
+  gateway_data:
